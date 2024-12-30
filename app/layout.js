@@ -6,7 +6,6 @@
  */
 
 "use client";
-import "./globals.css";
 import Link from "next/link";
 import { AuthContextProvider, useUserAuth } from "./_utils/auth-context";
 import { LogOut, Bookmark, Book } from "lucide-react";
