@@ -17,6 +17,7 @@ import {
   deleteItem,
   getFavoriteId,
 } from "@/app/_services/bookfoo-service";
+import { BtnFvrtSrch } from "./btn-fvrt-srch"; 
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -47,8 +48,10 @@ export default function SearchBar() {
       if (!response.ok) throw new Error("Failed to fetch data");
 
       const data = await response.json();
+      ////// check if book has a cover image
       const filteredResults = data.docs.filter((book) => book.cover_i);
       setResults(filteredResults || []);
+      ////// calculate total pages
       setTotalPages(Math.ceil(filteredResults.length / itemsPerPage));
     } catch (err) {
       setError("Search failed. Please try again.");
@@ -235,7 +238,7 @@ export default function SearchBar() {
                           </p>
                         )}
                       </div>
-                      <FavoriteButton book={book} />
+                      <BtnFvrtSrch book={book} user={user}/>
                     </div>
                   </div>
                 </div>
