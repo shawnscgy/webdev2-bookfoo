@@ -26,7 +26,6 @@ export default function SearchBar() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [savingId, setSavingId] = useState(null);
   const itemsPerPage = 10;
   const { user } = useUserAuth();
 
@@ -58,91 +57,6 @@ export default function SearchBar() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleToggleFavorite = async (book) => {
-    if (!user) {
-      setError("Please sign in to manage favorites");
-      return;
-    }
-
-    const bookId = book.key.replace("/works/", "").trim();
-    setSavingId(bookId);
-
-    try {
-      const itemId = await getFavoriteId(user.uid, book.key);
-
-      if (itemId) {
-        await deleteItem(user.uid, itemId);
-      } else {
-        const bookData = {
-          key: book.key,
-          title: book.title,
-          author: book.author_name?.[0] || "Unknown Author",
-          cover_i: book.cover_i,
-          first_publish_year: book.first_publish_year,
-        };
-        await addItem(user.uid, bookData);
-      }
-    } catch (err) {
-      console.error("Error toggling favorite:", err);
-      setError("Failed to update favorite status");
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  const FavoriteButton = ({ book }) => {
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [checkingStatus, setCheckingStatus] = useState(true);
-    const bookId = book.key.replace("/works/", "").trim();
-
-    React.useEffect(() => {
-      let mounted = true;
-
-      const checkStatus = async () => {
-        if (!user) {
-          setCheckingStatus(false);
-          return;
-        }
-
-        try {
-          const itemId = await getFavoriteId(user.uid, book.key);
-          if (mounted) {
-            setIsFavorite(!!itemId);
-          }
-        } catch (error) {
-          console.error("Error checking favorite status:", error);
-        } finally {
-          if (mounted) {
-            setCheckingStatus(false);
-          }
-        }
-      };
-
-      checkStatus();
-      return () => {
-        mounted = false;
-      };
-    }, [book.key]);
-
-    const isLoading = checkingStatus || savingId === bookId;
-
-    return (
-      <button
-        onClick={() => handleToggleFavorite(book)}
-        disabled={isLoading}
-        className="w-10 h-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-50"
-      >
-        {isLoading ? (
-          <Loader2 className="w-6 h-6 animate-spin" />
-        ) : isFavorite ? (
-          <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-        ) : (
-          <StarOff className="w-6 h-6 text-gray-500" />
-        )}
-      </button>
-    );
   };
 
   const getCurrentPageResults = () => {
