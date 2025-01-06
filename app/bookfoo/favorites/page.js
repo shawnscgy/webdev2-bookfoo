@@ -108,9 +108,9 @@ export default function MyFavorite() {
                 by {book.author_name || "Unknown Author"}
               </p>
 
-              {book.timestamp && (
+              {book.createdAt && (
                 <p className="text-sm text-gray-400 mt-2">
-                  Added: {new Date(book.timestamp).toLocaleDateString()}
+                  Added: {new Date(book.createdAt).toLocaleDateString()}
                 </p>
               )}
             </div>
