@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -26,8 +26,28 @@ export default function SearchBar() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [randomBooks, setRandomBooks] = useState([]);
   const itemsPerPage = 10;
   const { user } = useUserAuth();
+  
+  // random recommended books
+  useEffect(() => {
+    const fetchRandomBooks = async () => {
+      try {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=random&limit=3`
+        );
+        if (!response.ok) throw new Error("Failed to fetch random books");
+        const data = await response.json();
+        const filteredBooks = data.docs.slice(0, 3).filter((book) => book.cover_i);
+        setRandomBooks(filteredBooks);
+      } catch (err) {
+        console.error("Error fetching random books:", err);
+      }
+    };
+    fetchRandomBooks();
+  }, []);
+
 
   const handleSearch = async (e) => {
     if (e?.preventDefault) {
@@ -53,7 +73,7 @@ export default function SearchBar() {
       ////// calculate total pages
       setTotalPages(Math.ceil(filteredResults.length / itemsPerPage));
     } catch (err) {
-      setError("Search failed. Please try again.");
+      setError("No result found. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,6 +120,47 @@ export default function SearchBar() {
           </button>
         </form>
       </div>
+
+      {/* Random Books Section */}
+      {randomBooks.length > 0 && results.length === 0 && (
+        <div className="w-full max-w-4xl mx-auto mt-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+            Explore These Random Picks
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {randomBooks.map((book) => (
+              <div
+                key={book.key}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex flex-col items-center">
+                  {book.cover_i && (
+                    <Image
+                      src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
+                      alt={`Cover of ${book.title}`}
+                      width={112}
+                      height={160}
+                      className="w-28 h-40 object-cover rounded-lg shadow-sm mb-3"
+                    />
+                  )}
+                  <div className="text-center space-y-1">
+                    <Link
+                      href={`/bookfoo/book/${book.key.replace("/works/", "")}`}
+                      className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                    >
+                      {book.title}
+                    </Link>
+                    <p className="text-gray-600">
+                      by {book.author_name?.[0] || "Unknown Author"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
 
       {error && (
         <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-center">
